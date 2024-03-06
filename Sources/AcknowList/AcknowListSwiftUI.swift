@@ -119,20 +119,26 @@ public struct AcknowListRowSwiftUIView: View {
 
     /// Indicates if the view controller should try to fetch missing licenses from the GitHub API.
     public var canFetchLicenseFromGitHub = true
+    
+    @State var show: Bool = false
 
     public var body: some View {
-        if acknowledgement.text != nil || canFetchLicenseFromGitHubAndIsGitHubRepository(acknowledgement) {
-            NavigationLink(destination: AcknowSwiftUIView(acknowledgement: acknowledgement)) {
-                Text(acknowledgement.title)
-            }
-        }
-        else if let repository = acknowledgement.repository,
+        if let repository = acknowledgement.repository,
                 canOpenRepository(for: repository) {
-            Button(action: {
-                repository.openWithDefaultBrowser()
-            }) {
-                Text(acknowledgement.title)
-                    .foregroundColor(.primary)
+            if #available(tvOS 15.0, *) {
+                Button(action: {
+                    show = true
+                }) {
+                    Text(acknowledgement.title)
+                        .foregroundColor(.primary)
+                }
+                .fullScreenCover(isPresented: $show, content: {
+                    AcknowSwiftUIView(acknowledgement: acknowledgement)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.ultraThickMaterial)
+                })
+            } else {
+                // Fallback on earlier versions
             }
         }
         else {
