@@ -32,7 +32,7 @@ extension Acknow: Identifiable {
 }
 
 /// View that displays a list of acknowledgements.
-@available(iOS 13.0.0, macOS 10.15.0, watchOS 7.0.0, tvOS 13.0.0, *)
+@available(iOS 15.0.0, macOS 12.0, watchOS 10.0.0, tvOS 15.0.0, *)
 public struct AcknowListSwiftUIView: View {
 
     /// The represented array of `Acknow`.
@@ -111,7 +111,7 @@ public struct AcknowListSwiftUIView: View {
 }
 
 /// View that displays a row in a list of acknowledgements.
-@available(iOS 13.0.0, macOS 10.15.0, watchOS 7.0.0, tvOS 13.0.0, *)
+@available(iOS 15.0.0, macOS 12.0, watchOS 10.0, tvOS 15.0.0, *)
 public struct AcknowListRowSwiftUIView: View {
 
     /// The represented `Acknow`.
@@ -123,25 +123,26 @@ public struct AcknowListRowSwiftUIView: View {
     @State var show: Bool = false
 
     public var body: some View {
+        // If we have a web URL repository, we present a navigable row
         if let repository = acknowledgement.repository,
-                canOpenRepository(for: repository) {
-            if #available(tvOS 15.0, *) {
-                Button(action: {
-                    show = true
-                }) {
-                    Text(acknowledgement.title)
-                        .foregroundColor(.primary)
-                }
-                .fullScreenCover(isPresented: $show, content: {
-                    AcknowSwiftUIView(acknowledgement: acknowledgement)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.ultraThickMaterial)
-                })
-            } else {
-                // Fallback on earlier versions
+           canOpenRepository(for: repository) {
+            // Use modern presentation where available
+            #if os(iOS) || os(tvOS)
+            Button(action: { show = true }) {
+                Text(acknowledgement.title)
+                    .foregroundColor(.primary)
             }
+            .fullScreenCover(isPresented: $show) {
+                AcknowSwiftUIView(acknowledgement: acknowledgement)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.ultraThickMaterial)
+            }
+#else
+            Text(acknowledgement.title)
+#endif
         }
         else {
+            // No repository or cannot open: simple text row
             Text(acknowledgement.title)
         }
     }
@@ -165,7 +166,7 @@ public struct AcknowListRowSwiftUIView: View {
     }
 }
 
-@available(iOS 13.0.0, macOS 10.15.0, watchOS 7.0.0, tvOS 13.0.0, *)
+@available(iOS 15.0.0, macOS 12.0, watchOS 10.0.0, tvOS 15.0.0, *)
 struct AcknowListSwiftUI_Previews: PreviewProvider {
     static let license = """
         Copyright (c) 2015-2024 Vincent Tourraine (https://www.vtourraine.net)
@@ -207,3 +208,4 @@ struct AcknowListSwiftUI_Previews: PreviewProvider {
         .previewDevice(PreviewDevice(rawValue: "Mac"))
     }
 }
+
